@@ -45,17 +45,27 @@ impl<'tcx> LateLintPass<'tcx> for InvalidAccountData {
     ) {
         // visitor collects accounts referenced in fnc body
         let accounts = get_referenced_accounts(cx, body);
-        println!("{:#?}", accounts);
-        for account_id in accounts {
-            if !contains_owner_use(cx, body, account_id) {
-                span_lint(
-                    cx,
-                    INVALID_ACCOUNT_DATA,
-                    span,
-                    "this function doesn't use the owner field"
-                )
-                // return?? (if return, then we essentially short circuit)
-            }
+        println!("{:?}", accounts);
+        let len = accounts.len();
+        // it has something to do with using accounts, because looping 0..1 always spans
+        for _ in accounts.iter() {
+            println!("{}", "THIS IS WHERE THE LINT IS SPANNING!!!");
+            span_lint(
+              cx,
+              INVALID_ACCOUNT_DATA,
+              span,
+              "this function doesn't use the owner field"
+            );
+            // if !contains_owner_use(cx, body, id) {
+            //     println!("{:#?}", "lint");
+            //     // span_lint(
+            //     //     cx,
+            //     //     INVALID_ACCOUNT_DATA,
+            //     //     span,
+            //     //     "this function doesn't use the owner field"
+            //     // )
+            //     // return?? (if return, then we essentially short circuit)
+            // }
         }
     }
 }
@@ -77,13 +87,10 @@ fn get_referenced_accounts<'tcx>(cx: &LateContext<'tcx>, body: &'tcx Body<'tcx>)
 }
 
 impl<'cx, 'tcx> Visitor<'tcx> for AccountUses<'cx, 'tcx> {
-    // TODO: check if collects unique ids or not. Ex. ctx.accounts.token is referenced 2x in body
-    // make Vec a HashSet
     fn visit_expr(&mut self, expr: &'tcx Expr<'tcx>) {
         let ty = self.cx.typeck_results().expr_ty(expr);
         if match_type(self.cx, ty, &paths::SOLANA_PROGRAM_ACCOUNT_INFO) {
             if let Some(def_id) = self.cx.typeck_results().type_dependent_def_id(expr.hir_id) {
-                //println!("{:#?}", def_id);
                 self.uses.insert(def_id);
             }
         }
@@ -125,7 +132,7 @@ fn insecure() {
 //     dylint_testing::ui_test_example(env!("CARGO_PKG_NAME"), "recommended");
 // }
 
-// #[test]
-// fn secure() {
-//     dylint_testing::ui_test_example(env!("CARGO_PKG_NAME"), "secure");
-// }
+#[test]
+fn secure() {
+    dylint_testing::ui_test_example(env!("CARGO_PKG_NAME"), "secure");
+}

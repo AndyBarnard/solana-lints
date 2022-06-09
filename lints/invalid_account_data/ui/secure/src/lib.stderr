@@ -1,0 +1,22 @@
+error: this function doesn't use the owner field
+  --> $DIR/lib.rs:15:5
+   |
+LL | /     pub fn log_message(ctx: Context<LogMessage>) -> ProgramResult {
+LL | |         let token = SplTokenAccount::unpack(&ctx.accounts.token.data.borrow())?;
+LL | |         if ctx.accounts.authority.key != &token.owner {
+LL | |             return Err(ProgramError::InvalidAccountData);
+...  |
+LL | |         Ok(())
+LL | |     }
+   | |_____^
+   |
+   = note: `-D invalid-account-data` implied by `-D warnings`
+
+error: this function doesn't use the owner field
+  --> $DIR/lib.rs:31:1
+   |
+LL | fn main() {}
+   | ^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+
